@@ -1,16 +1,16 @@
-/* 
+/*
  * Copyright (C) 2014  Nicholas Gill
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -31,13 +31,17 @@ auto r6(double n) -> std::string {
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(6) << n;
     auto s = ss.str();
-    
+
     s.erase(s.find_last_not_of('0') + 1, std::string::npos);
     if(s.back() == '.')
         s.pop_back();
     if(s == "-0") s = "0";
     return s;
 };
+
+inline bool is_equal(double a, double b, double tolerance = 1e-7) {
+    return std::fabs(a - b) < tolerance;
+}
 
 struct vector {
     double x = 0.0;
@@ -48,7 +52,7 @@ struct vector {
     vector(double x, double y, double z)
      : x(x), y(y), z(z) {
     }
-    
+
     vector operator+(const vector& a) const {
         return {x + a.x, y + a.y, z + a.z};
     }
@@ -63,11 +67,6 @@ vector operator*(const vector& v, double a) {
     return {v.x * a, v.y * a, v.z * a};
 }
 
-std::ostream& operator<<(std::ostream& os, vector v) {
-    os << "X" << r6(v.x) << " Y" << r6(v.y) << " Z" << r6(v.z);
-    return os;
-}
-
 
 struct turtle {
     vector pos;
@@ -79,6 +78,8 @@ struct turtle {
         move,
         cut
     } motion = unknown;
+    vector last_pos;
+    double f = 0.0;
 
     vector orientation() const {
         static const double pi = 3.14159265359;
@@ -89,18 +90,50 @@ struct turtle {
 };
 void move_to(turtle& t, double x, double y, double z) {
     t.pos = {x, y, z};
-    std::cout << (t.motion == turtle::move ? "   " : "G00") << " " << t.pos << "\n"; 
+    std::cout << (t.motion == turtle::move ? "   " : "G00");
+    if(!is_equal(t.pos.x, t.last_pos.x))
+        std::cout << " X" << r6(t.pos.x);
+    if(!is_equal(t.pos.y, t.last_pos.y))
+        std::cout << " Y" << r6(t.pos.y);
+    if(!is_equal(t.pos.z, t.last_pos.z))
+        std::cout << " Z" << r6(t.pos.z);
+    std::cout << "\n";
+
     t.motion = turtle::move;
+    t.last_pos = t.pos;
+    t.f = 0.0;
 }
 void move(turtle& t, double dist) {
     t.pos += t.orientation() * dist;
-    std::cout << (t.motion == turtle::move ? "   " : "G00") << " X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << "\n"; 
+    std::cout << (t.motion == turtle::move ? "   " : "G00") << " ";
+    if(!is_equal(t.pos.x, t.last_pos.x))
+        std::cout << " X" << r6(t.pos.x);
+    if(!is_equal(t.pos.y, t.last_pos.y))
+        std::cout << " Y" << r6(t.pos.y);
+    if(!is_equal(t.pos.z, t.last_pos.z))
+        std::cout << " Z" << r6(t.pos.z);
+    std::cout << "\n";
+
     t.motion = turtle::move;
+    t.last_pos = t.pos;
+    t.f = 0.0;
 }
 void cut(turtle& t, double dist, double f) {
     t.pos += t.orientation() * dist;
-    std::cout << (t.motion == turtle::cut ? "   " : "G01") << " X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << " F" << f << "\n"; 
+    std::cout << (t.motion == turtle::cut ? "   " : "G01") << " ";
+    if(!is_equal(t.pos.x, t.last_pos.x))
+        std::cout << " X" << r6(t.pos.x);
+    if(!is_equal(t.pos.y, t.last_pos.y))
+        std::cout << " Y" << r6(t.pos.y);
+    if(!is_equal(t.pos.z, t.last_pos.z))
+        std::cout << " Z" << r6(t.pos.z);
+    if(!is_equal(f, t.f))
+        std::cout << " F" << f;
+    std::cout << "\n";
+
     t.motion = turtle::cut;
+    t.last_pos = t.pos;
+    t.f = f;
 }
 void turn(turtle& t, double degrees) {
     t.a += degrees;

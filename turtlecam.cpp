@@ -49,18 +49,23 @@ struct vector {
      : x(x), y(y), z(z) {
     }
     
-    vector operator+(vector a) const {
+    vector operator+(const vector& a) const {
         return {x + a.x, y + a.y, z + a.z};
     }
-    vector& operator+=(vector a) {
+    vector& operator+=(const vector& a) {
         x += a.x;
         y += a.y;
         z += a.z;
         return *this;
     }
 };
-vector operator*(vector v, double a) {
+vector operator*(const vector& v, double a) {
     return {v.x * a, v.y * a, v.z * a};
+}
+
+std::ostream& operator<<(std::ostream& os, vector v) {
+    os << "X" << r6(v.x) << " Y" << r6(v.y) << " Z" << r6(v.z);
+    return os;
 }
 
 
@@ -84,7 +89,7 @@ struct turtle {
 };
 void move_to(turtle& t, double x, double y, double z) {
     t.pos = {x, y, z};
-    std::cout << (t.motion == turtle::move ? "   " : "G00") << " X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << "\n"; 
+    std::cout << (t.motion == turtle::move ? "   " : "G00") << " " << t.pos << "\n"; 
     t.motion = turtle::move;
 }
 void move(turtle& t, double dist) {

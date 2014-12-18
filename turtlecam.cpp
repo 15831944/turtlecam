@@ -19,13 +19,13 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <memory>
 
 extern "C" {
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
 }
-#include <stdexcept>
 
 auto r6 = [](double n) -> std::string {
     std::ostringstream ss;

@@ -1,3 +1,4 @@
+-- print(argv[1]);
 move(100)
 pitch(90)
 cut(10,10)

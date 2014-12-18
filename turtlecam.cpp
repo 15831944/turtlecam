@@ -156,7 +156,14 @@ int main(int argc, char* argv[]) {
     luaL_openlibs(L);
     turtle_open(L);
 
-    if(argc == 2) {
+    lua_newtable(L);
+    for (int i = 1; i < argc; ++i) {
+        lua_pushstring(L, argv[i]);
+        lua_rawseti(L, -2, i);
+    }
+    lua_setglobal(L, "argv");
+
+    if(argc >= 2) {
         int s = luaL_dofile(L, argv[1]);
         if(s) {
             std::string error;

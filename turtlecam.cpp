@@ -77,6 +77,10 @@ struct turtle {
         return {std::cos(theta) * std::sin(phi), std::sin(theta) * std::sin(phi), std::cos(phi)};
     }
 };
+void move_to(turtle& t, double x, double y, double z) {
+    t.pos = {x, y, z};
+    std::cout << "G00 X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << "\n"; 
+}
 void move(turtle& t, double dist) {
     t.pos += t.orientation() * dist;
     std::cout << "G00 X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << "\n"; 
@@ -94,6 +98,20 @@ void pitch(turtle& t, double degrees) {
 
 turtle t;
 
+int lua_move_to(lua_State *L) {
+    int n = lua_gettop(L);
+    if(n != 3 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
+        lua_pushstring(L, "move_to(x, y, z)");
+        lua_error(L);
+    }
+
+    auto x = lua_tonumber(L, 1);
+    auto y = lua_tonumber(L, 1);
+    auto z = lua_tonumber(L, 1);
+    move_to(t, x, y, z);
+
+    return 0;
+}
 int lua_move(lua_State *L) {
     int n = lua_gettop(L);
     if(n != 1 || !lua_isnumber(L, 1)) {
@@ -144,6 +162,7 @@ int lua_pitch(lua_State *L) {
     return 0;
 }
 void turtle_open(lua_State* L) {
+    lua_register(L, "move_to", lua_move_to);
     lua_register(L, "move", lua_move);
     lua_register(L, "cut", lua_cut);
     lua_register(L, "turn", lua_turn);

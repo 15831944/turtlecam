@@ -19,7 +19,6 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
-#include <memory>
 
 extern "C" {
 #include "lua.h"
@@ -217,6 +216,11 @@ void turtle_open(lua_State* L) {
 
 
 int main(int argc, char* argv[]) {
+    if(argc < 2) {
+        std::cerr << argv[0] << " command\n";
+        return 1;
+    }
+
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     turtle_open(L);
@@ -228,23 +232,9 @@ int main(int argc, char* argv[]) {
     }
     lua_setglobal(L, "argv");
 
-    if(argc >= 2) {
-        int s = luaL_dofile(L, argv[1]);
-        if(s) {
-            std::string error;
-            error = std::string("LUA: ") + lua_tostring(L, -1);
-            std::cerr << error << "\n";
-            lua_pop(L, 1); // remove error message
-        }
-    } else {
-        move(t, 100);
-        pitch(t, 90);
-        cut(t, 10, 10);
-        pitch(t, -90);
-        for(int i = 0; i < 6; ++i) {
-            turn(t, 60);
-            cut(t, 100, 50);
-        }
+    if(luaL_dofile(L, argv[1])) {
+        std::cerr << lua_tostring(L, -1) << "\n";
+        lua_pop(L, 1);
     }
 
     lua_close(L);

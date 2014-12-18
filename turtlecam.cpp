@@ -20,6 +20,13 @@
 #include <iomanip>
 #include <string>
 
+extern "C" {
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+}
+#include <stdexcept>
+
 auto r6 = [](double n) -> std::string {
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(6) << n;
@@ -85,15 +92,89 @@ void pitch(turtle& t, double degrees) {
     t.b += degrees;
 }
 
-int main() {
-    turtle t;
+turtle t;
 
-    move(t, 100);
-    pitch(t, 90);
-    cut(t, 10, 10);
-    pitch(t, -90);
-    for(int i = 0; i < 6; ++i) {
-        turn(t, 60);
-        cut(t, 100, 50);
+int lua_move(lua_State *L) {
+    int n = lua_gettop(L);
+    if(n != 1 || !lua_isnumber(L, 1)) {
+        lua_pushstring(L, "move(dist)");
+        lua_error(L);
     }
+
+    auto dist = lua_tonumber(L, 1);
+    move(t, dist);
+
+    return 0;
+}
+int lua_cut(lua_State *L) {
+    int n = lua_gettop(L);
+    if(n != 2 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2)) {
+        lua_pushstring(L, "cut(dist, f)");
+        lua_error(L);
+    }
+
+    auto dist = lua_tonumber(L, 1);
+    auto f = lua_tonumber(L, 2);
+    cut(t, dist, f);
+
+    return 0;
+}
+int lua_turn(lua_State *L) {
+    int n = lua_gettop(L);
+    if(n != 1 || !lua_isnumber(L, 1)) {
+        lua_pushstring(L, "turn(degrees)");
+        lua_error(L);
+    }
+
+    auto degrees = lua_tonumber(L, 1);
+    turn(t, degrees);
+
+    return 0;
+}
+int lua_pitch(lua_State *L) {
+    int n = lua_gettop(L);
+    if(n != 1 || !lua_isnumber(L, 1)) {
+        lua_pushstring(L, "pitch(degrees)");
+        lua_error(L);
+    }
+
+    auto degrees = lua_tonumber(L, 1);
+    pitch(t, degrees);
+
+    return 0;
+}
+void turtle_open(lua_State* L) {
+    lua_register(L, "move", lua_move);
+    lua_register(L, "cut", lua_cut);
+    lua_register(L, "turn", lua_turn);
+    lua_register(L, "pitch", lua_pitch);
+}
+
+
+int main(int argc, char* argv[]) {
+    lua_State* L = lua_open();
+    luaL_openlibs(L);
+    turtle_open(L);
+
+    if(argc == 2) {
+        int s = luaL_dofile(L, argv[1]);
+        if(s) {
+            std::string error;
+            error = std::string("LUA: ") + lua_tostring(L, -1);
+            std::cerr << error << "\n";
+            lua_pop(L, 1); // remove error message
+        }
+    } else {
+        move(t, 100);
+        pitch(t, 90);
+        cut(t, 10, 10);
+        pitch(t, -90);
+        for(int i = 0; i < 6; ++i) {
+            turn(t, 60);
+            cut(t, 100, 50);
+        }
+    }
+
+    lua_close(L);
+    L = NULL;
 }

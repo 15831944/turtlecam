@@ -69,6 +69,11 @@ struct turtle {
     /* Initial orientation is x:1,y:0,z:0 */
     double a = 0.0;
     double b = 90.0;
+    enum {
+        unknown,
+        move,
+        cut
+    } motion = unknown;
 
     vector orientation() const {
         static const double pi = 3.14159265359;
@@ -79,15 +84,18 @@ struct turtle {
 };
 void move_to(turtle& t, double x, double y, double z) {
     t.pos = {x, y, z};
-    std::cout << "G00 X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << "\n"; 
+    std::cout << (t.motion == turtle::move ? "   " : "G00") << " X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << "\n"; 
+    t.motion = turtle::move;
 }
 void move(turtle& t, double dist) {
     t.pos += t.orientation() * dist;
-    std::cout << "G00 X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << "\n"; 
+    std::cout << (t.motion == turtle::move ? "   " : "G00") << " X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << "\n"; 
+    t.motion = turtle::move;
 }
 void cut(turtle& t, double dist, double f) {
     t.pos += t.orientation() * dist;
-    std::cout << "G01 X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << " F" << f << "\n"; 
+    std::cout << (t.motion == turtle::cut ? "   " : "G01") << " X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << " F" << f << "\n"; 
+    t.motion = turtle::cut;
 }
 void turn(turtle& t, double degrees) {
     t.a += degrees;

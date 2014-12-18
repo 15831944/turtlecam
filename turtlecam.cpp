@@ -59,6 +59,7 @@ vector operator*(vector v, double a) {
 
 struct turtle {
     vector pos;
+    /* Initial orientation is x:1,y:0,z:0 */
     double a = 0.0;
     double b = 90.0;
 
@@ -68,26 +69,27 @@ struct turtle {
         auto phi = b * (pi/180);
         return {std::cos(theta) * std::sin(phi), std::sin(theta) * std::sin(phi), std::cos(phi)};
     }
-
-    void move(double dist) {
-        pos += orientation() * dist;
-        std::cout << "x:" << r6(pos.x) << ", y:" << r6(pos.y) << ", z:" << r6(pos.z) << "\n"; 
-    }
-    void turn(double degrees) {
-        a += degrees;
-    }
-    void pitch(double degrees) {
-        b += degrees;
-    }
 };
+void move(turtle& t, double dist) {
+    t.pos += t.orientation() * dist;
+    std::cout << "x:" << r6(t.pos.x) << ", y:" << r6(t.pos.y) << ", z:" << r6(t.pos.z) << "\n"; 
+}
+void turn(turtle& t, double degrees) {
+    t.a += degrees;
+}
+void pitch(turtle& t, double degrees) {
+    t.b += degrees;
+}
 
 int main() {
     turtle t;
-    t.pitch(90);
-    t.move(10);
-    t.pitch(-90);
+
+    move(t, 100);
+    pitch(t, 90);
+    move(t, 10);
+    pitch(t, -90);
     for(int i = 0; i < 6; ++i) {
-        t.turn(60);
-        t.move(100);
+        turn(t, 60);
+        move(t, 100);
     }
 }

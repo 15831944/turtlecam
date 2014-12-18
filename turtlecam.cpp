@@ -27,7 +27,7 @@ extern "C" {
 #include "lauxlib.h"
 }
 
-auto r6 = [](double n) -> std::string {
+auto r6(double n) -> std::string {
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(6) << n;
     auto s = ss.str();

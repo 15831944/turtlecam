@@ -72,7 +72,11 @@ struct turtle {
 };
 void move(turtle& t, double dist) {
     t.pos += t.orientation() * dist;
-    std::cout << "x:" << r6(t.pos.x) << ", y:" << r6(t.pos.y) << ", z:" << r6(t.pos.z) << "\n"; 
+    std::cout << "G00 X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << "\n"; 
+}
+void cut(turtle& t, double dist, double f) {
+    t.pos += t.orientation() * dist;
+    std::cout << "G01 X" << r6(t.pos.x) << " Y" << r6(t.pos.y) << " Z" << r6(t.pos.z) << " F" << f << "\n"; 
 }
 void turn(turtle& t, double degrees) {
     t.a += degrees;
@@ -86,10 +90,10 @@ int main() {
 
     move(t, 100);
     pitch(t, 90);
-    move(t, 10);
+    cut(t, 10, 10);
     pitch(t, -90);
     for(int i = 0; i < 6; ++i) {
         turn(t, 60);
-        move(t, 100);
+        cut(t, 100, 50);
     }
 }

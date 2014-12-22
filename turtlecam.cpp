@@ -68,6 +68,10 @@ vector operator*(const vector& v, double a) {
 
 
 struct turtle {
+    enum {
+        mill,
+        lathe
+    } mode = mill;
     vector pos;
     /* Initial orientation is x:1,y:0,z:0 */
     double a = 0.0;
@@ -90,12 +94,20 @@ struct turtle {
 void move_to(turtle& t, double x, double y, double z) {
     t.pos = {x, y, z};
     std::cout << (t.motion == turtle::move ? "   " : "G00");
-    if(!is_equal(t.pos.x, t.last_pos.x))
-        std::cout << " X" << r6(t.pos.x);
-    if(!is_equal(t.pos.y, t.last_pos.y))
-        std::cout << " Y" << r6(t.pos.y);
-    if(!is_equal(t.pos.z, t.last_pos.z))
-        std::cout << " Z" << r6(t.pos.z);
+
+    if(t.mode == turtle::mill) {
+        if(!is_equal(t.pos.x, t.last_pos.x))
+            std::cout << " X" << r6(t.pos.x);
+        if(!is_equal(t.pos.y, t.last_pos.y))
+            std::cout << " Y" << r6(t.pos.y);
+        if(!is_equal(t.pos.z, t.last_pos.z))
+            std::cout << " Z" << r6(t.pos.z);
+    } else {
+        if(!is_equal(t.pos.x, t.last_pos.x))
+            std::cout << " X" << r6(t.pos.x);
+        if(!is_equal(t.pos.y, t.last_pos.y))
+            std::cout << " Z" << r6(t.pos.y);
+    }
     std::cout << "\n";
 
     t.motion = turtle::move;
@@ -104,13 +116,20 @@ void move_to(turtle& t, double x, double y, double z) {
 }
 void move(turtle& t, double dist) {
     t.pos += t.orientation() * dist;
-    std::cout << (t.motion == turtle::move ? "   " : "G00") << " ";
-    if(!is_equal(t.pos.x, t.last_pos.x))
-        std::cout << " X" << r6(t.pos.x);
-    if(!is_equal(t.pos.y, t.last_pos.y))
-        std::cout << " Y" << r6(t.pos.y);
-    if(!is_equal(t.pos.z, t.last_pos.z))
-        std::cout << " Z" << r6(t.pos.z);
+    std::cout << (t.motion == turtle::move ? "   " : "G00");
+    if(t.mode == turtle::mill) {
+        if(!is_equal(t.pos.x, t.last_pos.x))
+            std::cout << " X" << r6(t.pos.x);
+        if(!is_equal(t.pos.y, t.last_pos.y))
+            std::cout << " Y" << r6(t.pos.y);
+        if(!is_equal(t.pos.z, t.last_pos.z))
+            std::cout << " Z" << r6(t.pos.z);
+    } else {
+        if(!is_equal(t.pos.x, t.last_pos.x))
+            std::cout << " X" << r6(t.pos.x);
+        if(!is_equal(t.pos.y, t.last_pos.y))
+            std::cout << " Z" << r6(t.pos.y);
+    }
     std::cout << "\n";
 
     t.motion = turtle::move;
@@ -119,13 +138,20 @@ void move(turtle& t, double dist) {
 }
 void cut(turtle& t, double dist, double f) {
     t.pos += t.orientation() * dist;
-    std::cout << (t.motion == turtle::cut ? "   " : "G01") << " ";
-    if(!is_equal(t.pos.x, t.last_pos.x))
-        std::cout << " X" << r6(t.pos.x);
-    if(!is_equal(t.pos.y, t.last_pos.y))
-        std::cout << " Y" << r6(t.pos.y);
-    if(!is_equal(t.pos.z, t.last_pos.z))
-        std::cout << " Z" << r6(t.pos.z);
+    std::cout << (t.motion == turtle::cut ? "   " : "G01");
+    if(t.mode == turtle::mill) {
+        if(!is_equal(t.pos.x, t.last_pos.x))
+            std::cout << " X" << r6(t.pos.x);
+        if(!is_equal(t.pos.y, t.last_pos.y))
+            std::cout << " Y" << r6(t.pos.y);
+        if(!is_equal(t.pos.z, t.last_pos.z))
+            std::cout << " Z" << r6(t.pos.z);
+    } else {
+        if(!is_equal(t.pos.x, t.last_pos.x))
+            std::cout << " X" << r6(t.pos.x);
+        if(!is_equal(t.pos.y, t.last_pos.y))
+            std::cout << " Z" << r6(t.pos.y);
+    }
     if(!is_equal(f, t.f))
         std::cout << " F" << f;
     std::cout << "\n";
@@ -143,17 +169,51 @@ void pitch(turtle& t, double degrees) {
 
 turtle t;
 
-int lua_move_to(lua_State *L) {
+int lua_mode(lua_State *L) {
     int n = lua_gettop(L);
-    if(n != 3 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
-        lua_pushstring(L, "move_to(x, y, z)");
+    if(n != 1 || !lua_isstring(L, 1)) {
+        lua_pushstring(L, "mode(mill|lathe)");
+        lua_error(L);
+        return 0;
+    }
+
+    std::string mode = lua_tostring(L, 1);
+    if(mode == "mill")
+        t.mode = turtle::mill;
+    else if(mode == "lathe")
+        t.mode = turtle::lathe;
+    else {
+        lua_pushstring(L, "mode(mill|lathe)");
         lua_error(L);
     }
 
-    auto x = lua_tonumber(L, 1);
-    auto y = lua_tonumber(L, 1);
-    auto z = lua_tonumber(L, 1);
-    move_to(t, x, y, z);
+    return 0;
+}
+int lua_move_to(lua_State *L) {
+    int n = lua_gettop(L);
+    if(t.mode == turtle::mill) {
+        if(n != 3 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
+            lua_pushstring(L, "move_to(x, y, z)");
+            lua_error(L);
+            return 0;
+        }
+
+        auto x = lua_tonumber(L, 1);
+        auto y = lua_tonumber(L, 2);
+        auto z = lua_tonumber(L, 3);
+        move_to(t, x, y, z);
+    } else {
+        if(n != 2 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2)) {
+            lua_pushstring(L, "move_to(x, z)");
+            lua_error(L);
+            return 0;
+        }
+
+        auto x = lua_tonumber(L, 1);
+        auto y = lua_tonumber(L, 2);
+        auto z = 0;
+        move_to(t, x, y, z);
+    }
 
     return 0;
 }
@@ -162,6 +222,7 @@ int lua_move(lua_State *L) {
     if(n != 1 || !lua_isnumber(L, 1)) {
         lua_pushstring(L, "move(dist)");
         lua_error(L);
+        return 0;
     }
 
     auto dist = lua_tonumber(L, 1);
@@ -174,6 +235,7 @@ int lua_cut(lua_State *L) {
     if(n != 2 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2)) {
         lua_pushstring(L, "cut(dist, f)");
         lua_error(L);
+        return 0;
     }
 
     auto dist = lua_tonumber(L, 1);
@@ -187,6 +249,7 @@ int lua_turn(lua_State *L) {
     if(n != 1 || !lua_isnumber(L, 1)) {
         lua_pushstring(L, "turn(degrees)");
         lua_error(L);
+        return 0;
     }
 
     auto degrees = lua_tonumber(L, 1);
@@ -196,17 +259,21 @@ int lua_turn(lua_State *L) {
 }
 int lua_pitch(lua_State *L) {
     int n = lua_gettop(L);
-    if(n != 1 || !lua_isnumber(L, 1)) {
-        lua_pushstring(L, "pitch(degrees)");
-        lua_error(L);
-    }
+    if(t.mode == turtle::mill) {
+        if(n != 1 || !lua_isnumber(L, 1)) {
+            lua_pushstring(L, "pitch(degrees)");
+            lua_error(L);
+            return 0;
+        }
 
-    auto degrees = lua_tonumber(L, 1);
-    pitch(t, degrees);
+        auto degrees = lua_tonumber(L, 1);
+        pitch(t, degrees);
+    }
 
     return 0;
 }
 void turtle_open(lua_State* L) {
+    lua_register(L, "mode", lua_mode);
     lua_register(L, "move_to", lua_move_to);
     lua_register(L, "move", lua_move);
     lua_register(L, "cut", lua_cut);

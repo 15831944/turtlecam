@@ -115,6 +115,7 @@ void move_to(turtle& t, double x, double y, double z) {
     t.f = 0.0;
 }
 void move(turtle& t, double dist) {
+    if(dist == 0.0) return;
     t.pos += t.orientation() * dist;
     std::cout << (t.motion == turtle::move ? "   " : "G00");
     if(t.mode == turtle::mill) {
@@ -137,6 +138,7 @@ void move(turtle& t, double dist) {
     t.f = 0.0;
 }
 void cut(turtle& t, double dist, double f) {
+    if(dist == 0.0) return;
     t.pos += t.orientation() * dist;
     std::cout << (t.motion == turtle::cut ? "   " : "G01");
     if(t.mode == turtle::mill) {

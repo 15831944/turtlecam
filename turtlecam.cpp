@@ -137,6 +137,31 @@ void move(turtle& t, double dist) {
     t.last_pos = t.pos;
     t.f = 0.0;
 }
+void cut_to(turtle& t, double x, double y, double z, double f) {
+    t.pos = {x, y, z};
+    std::cout << (t.motion == turtle::move ? "   " : "G01");
+
+    if(t.mode == turtle::mill) {
+        if(!is_equal(t.pos.x, t.last_pos.x))
+            std::cout << " X" << r6(t.pos.x);
+        if(!is_equal(t.pos.y, t.last_pos.y))
+            std::cout << " Y" << r6(t.pos.y);
+        if(!is_equal(t.pos.z, t.last_pos.z))
+            std::cout << " Z" << r6(t.pos.z);
+    } else {
+        if(!is_equal(t.pos.x, t.last_pos.x))
+            std::cout << " X" << r6(t.pos.x);
+        if(!is_equal(t.pos.y, t.last_pos.y))
+            std::cout << " Z" << r6(t.pos.y);
+    }
+    if(!is_equal(f, t.f))
+        std::cout << " F" << f;
+    std::cout << "\n";
+
+    t.motion = turtle::cut;
+    t.last_pos = t.pos;
+    t.f = f;
+}
 void cut(turtle& t, double dist, double f) {
     if(dist == 0.0) return;
     t.pos += t.orientation() * dist;
@@ -232,6 +257,36 @@ int lua_move(lua_State *L) {
 
     return 0;
 }
+int lua_cut_to(lua_State *L) {
+    int n = lua_gettop(L);
+    if(t.mode == turtle::mill) {
+        if(n != 3 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4)) {
+            lua_pushstring(L, "cut_to(x, y, z, f)");
+            lua_error(L);
+            return 0;
+        }
+
+        auto x = lua_tonumber(L, 1);
+        auto y = lua_tonumber(L, 2);
+        auto z = lua_tonumber(L, 3);
+        auto f = lua_tonumber(L, 4);
+        cut_to(t, x, y, z, f);
+    } else {
+        if(n != 2 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
+            lua_pushstring(L, "cut_to(x, z, f)");
+            lua_error(L);
+            return 0;
+        }
+
+        auto x = lua_tonumber(L, 1);
+        auto y = lua_tonumber(L, 2);
+        auto z = 0;
+        auto f = lua_tonumber(L, 3);
+        cut_to(t, x, y, z, f);
+    }
+
+    return 0;
+}
 int lua_cut(lua_State *L) {
     int n = lua_gettop(L);
     if(n != 2 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2)) {
@@ -279,6 +334,7 @@ void turtle_open(lua_State* L) {
     lua_register(L, "move_to", lua_move_to);
     lua_register(L, "move", lua_move);
     lua_register(L, "cut", lua_cut);
+    lua_register(L, "cut_to", lua_cut_to);
     lua_register(L, "turn", lua_turn);
     lua_register(L, "pitch", lua_pitch);
 }

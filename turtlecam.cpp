@@ -260,7 +260,7 @@ int lua_move(lua_State *L) {
 int lua_cut_to(lua_State *L) {
     int n = lua_gettop(L);
     if(t.mode == turtle::mill) {
-        if(n != 3 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4)) {
+        if(n != 4 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4)) {
             lua_pushstring(L, "cut_to(x, y, z, f)");
             lua_error(L);
             return 0;

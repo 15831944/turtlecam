@@ -138,7 +138,7 @@ void move(turtle& t, double dist) {
     t.f = 0.0;
 }
 void cut_to(turtle& t, double x, double y, double z, double f) {
-    if(is_equal(t.pos.x, t.last_pos.x) && is_equal(t.pos.y, t.last_pos.y) && is_equal(t.pos.z, t.last_pos.z))
+    if(is_equal(x, t.last_pos.x) && is_equal(y, t.last_pos.y) && is_equal(z, t.last_pos.z))
         return;
     t.pos = {x, y, z};
     std::cout << (t.motion == turtle::move ? "   " : "G01");

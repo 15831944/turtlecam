@@ -191,6 +191,9 @@ void cut(turtle& t, double dist, double f) {
     t.last_pos = t.pos;
     t.f = f;
 }
+void turn_to(turtle& t, double degrees) {
+    t.a = degrees;
+}
 void turn(turtle& t, double degrees) {
     t.a += degrees;
 }
@@ -305,6 +308,19 @@ int lua_cut(lua_State *L) {
 
     return 0;
 }
+int lua_turn_to(lua_State *L) {
+    int n = lua_gettop(L);
+    if(n != 1 || !lua_isnumber(L, 1)) {
+        lua_pushstring(L, "turn_to(degrees)");
+        lua_error(L);
+        return 0;
+    }
+
+    auto degrees = lua_tonumber(L, 1);
+    turn_to(t, degrees);
+
+    return 0;
+}
 int lua_turn(lua_State *L) {
     int n = lua_gettop(L);
     if(n != 1 || !lua_isnumber(L, 1)) {
@@ -339,6 +355,7 @@ void turtle_open(lua_State* L) {
     lua_register(L, "move", lua_move);
     lua_register(L, "cut", lua_cut);
     lua_register(L, "cut_to", lua_cut_to);
+    lua_register(L, "turn_to", lua_turn_to);
     lua_register(L, "turn", lua_turn);
     lua_register(L, "pitch", lua_pitch);
 }

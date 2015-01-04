@@ -92,6 +92,8 @@ struct turtle {
     }
 };
 void move_to(turtle& t, double x, double y, double z) {
+    if(is_equal(x, t.last_pos.x) && is_equal(y, t.last_pos.y) && is_equal(z, t.last_pos.z))
+        return;
     t.pos = {x, y, z};
     std::cout << (t.motion == turtle::move ? "   " : "G00");
 

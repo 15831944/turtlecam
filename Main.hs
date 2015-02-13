@@ -3,6 +3,7 @@ import Control.Exception (bracket)
 import Data.Maybe
 import qualified Scripting.Lua as Lua
 import Numeric
+import Control.Monad.State
 
 
 data Vector a = Vector a a a deriving (Show, Eq)
@@ -28,6 +29,15 @@ data Turtle = Turtle { position :: Vector Double
                      , f :: Double
                      } deriving (Show)
 
+data Word = F Double
+          | G Double
+          | X Double
+          | Y Double
+          | Z Double
+    deriving (Eq, Read)
+
+type Block = [Word]
+
 usage :: IO ()
 usage = putStrLn "turtlecam [command]"
 
@@ -45,6 +55,10 @@ main = do
         [] -> usage
         [file] -> doFile file
         otherwise -> usage
+
+-- Motion commands are stateful
+move_to :: State Turtle Block
+move_to = state $ \t -> ([],t)
 
 pow :: Double -> Double -> IO Double
 pow d1 d2 = return $ d1 ** d2

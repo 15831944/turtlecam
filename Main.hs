@@ -2,9 +2,8 @@ import System.Environment
 import Control.Exception (bracket)
 import Data.Maybe
 import qualified Scripting.Lua as Lua
+import Numeric
 
-data Mode = Mill | Lathe deriving (Enum, Show)
-data Motion = Move | Cut deriving (Enum, Show)
 
 data Vector a = Vector a a a deriving (Show, Eq)
 
@@ -14,6 +13,12 @@ plus :: (Num a) => Vector a -> Vector a -> Vector a
 mult :: (Num a) => Vector a -> a -> Vector a
 (Vector x y z) `mult` a = Vector (x*a) (y*a) (z*a)
 
+-- todo Need to remove unnecessary digits from end.
+r6 :: (RealFloat a) => a -> String
+r6 n = showFFloat (Just 6) n ""
+
+data Mode = Mill | Lathe deriving (Enum, Show)
+data Motion = Move | Cut deriving (Enum, Show)
 
 data Turtle = Turtle { position :: Vector Double
                      , a :: Double
@@ -39,6 +44,7 @@ main = do
     case args of
         [] -> usage
         [file] -> doFile file
+        otherwise -> usage
 
 pow :: Double -> Double -> IO Double
 pow d1 d2 = return $ d1 ** d2

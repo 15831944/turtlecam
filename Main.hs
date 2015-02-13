@@ -4,6 +4,7 @@ import Data.Maybe
 import qualified Scripting.Lua as Lua
 import Numeric
 import Control.Monad.State
+import Data.List
 
 data Point a = Point a a a deriving (Show, Eq)
 
@@ -28,8 +29,16 @@ data Turtle = Turtle { mode :: Mode
                      , b :: Double
                      , motion :: Maybe Motion
                      , last_position :: Point Double
-                     , f :: Double
+                     , feed :: Double
                      } deriving (Show)
+newTurtle :: Mode -> Turtle
+newTurtle m = Turtle { mode = m
+                  , position = Point 0 0 0
+                  , a = 0
+                  , b = 0
+                  , motion = Nothing
+                  , last_position = Point 0 0 0
+                  , feed = 0 }
 
 data Word = F Double
           | G Double
@@ -68,14 +77,22 @@ generateMotion :: Point Double -> Mode -> Motion -> Block
 generateMotion pos m Move = generateMove pos m
 generateMotion pos m Cut = generateCut pos m
 
+turtleState :: Motion -> Point Double -> Double -> Turtle -> Turtle
+turtleState m pos f t = t { position = pos
+                          , motion = Just m
+                          , feed = f }
+
 -- Motion commands are stateful
 -- let updatePos t pos = t { position = pos }
 -- todo update state
 move_to :: Point Double -> State Turtle Block
 move_to pos@(Point x y z) = state $ \t -> 
-    let block = generateMotion pos (mode t) Move
+    let curPos = generatePosition (position t) (mode t)
+        rawBlock = generateMotion pos (mode t) Move
+        block = rawBlock \\ curPos
+        newState = turtleState Move pos 0
     in
-        if pos /= position t then (block, t)
+        if pos /= position t then (block, newState t)
         else ([],t)
 
 pow :: Double -> Double -> IO Double

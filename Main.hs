@@ -22,11 +22,20 @@ main = do
     case args of
 --        [] -> usage
         [] -> let 
-                (code, state) = runState (move_to (10, 0, 0)) (newTurtle Mill)
-              in
+                (code, state) = runState millSquare (newTurtle Mill)
+              in do
                 print code
+                print state
         [file] -> doFile file
         otherwise -> usage
+
+
+millSquare = do
+    a <- move_to(10, 0, 0)
+    b <- move_to(10, 10, 0)
+    c <- move_to(0, 10, 0)
+    d <- move_to(0, 0, 0)
+    return a-- ++ b ++ c ++ d
 
 
 pow :: Double -> Double -> IO Double

@@ -57,9 +57,12 @@ generateMotion pos m Move = generateMove pos m
 generateMotion pos m Cut = generateCut pos m
 
 turtleState :: Motion -> Point -> Double -> Turtle -> Turtle
-turtleState m pos f t = t { position = pos
-                          , motion = Just m
-                          , feed = f }
+turtleState m pos f t = let last_pos = position t 
+                        in
+                            t { position = pos
+                              , motion = Just m
+                              , feed = f 
+                              , last_position = last_pos }
 
 -- Motion commands are stateful
 -- let updatePos t pos = t { position = pos }

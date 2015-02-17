@@ -2,6 +2,8 @@ import System.Environment
 import Control.Exception (bracket)
 import qualified Scripting.Lua as Lua
 import Turtle
+import Control.Monad.State
+import Vector
 
 
 usage :: IO ()
@@ -18,7 +20,11 @@ main :: IO ()
 main = do
     args <- getArgs
     case args of
-        [] -> usage
+--        [] -> usage
+        [] -> let 
+                (code, state) = runState (move_to (10, 0, 0)) (newTurtle Mill)
+              in
+                print code
         [file] -> doFile file
         otherwise -> usage
 

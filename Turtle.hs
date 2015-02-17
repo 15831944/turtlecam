@@ -1,6 +1,7 @@
 module Turtle
 ( Mode (..)
 , newTurtle
+, move_to
 , Word (..)
 , Block
 ) where
@@ -63,9 +64,10 @@ turtleState m pos f t = t { position = pos
 -- Motion commands are stateful
 -- let updatePos t pos = t { position = pos }
 -- todo update state
-move_to :: Point -> State Turtle Block
-move_to pos@(Point x y z) = state $ \t -> 
-    let curPos = generatePosition (position t) (mode t)
+move_to :: (Double, Double, Double) -> State Turtle Block
+move_to (x, y, z) = state $ \t -> 
+    let pos = Point x y z
+        curPos = generatePosition (position t) (mode t)
         rawBlock = generateMotion pos (mode t) Move
         block = rawBlock \\ curPos
         newState = turtleState Move pos 0

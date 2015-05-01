@@ -19,12 +19,15 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <boost/math/quaternion.hpp>
 
 extern "C" {
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
 }
+
+static const double pi = 3.14159265359;
 
 auto r6(double n) -> std::string {
     std::ostringstream ss;
@@ -61,11 +64,62 @@ struct vector {
         z += a.z;
         return *this;
     }
+    vector cross(const vector& a) {
+        return {y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x};
+    }
 };
 vector operator*(const vector& v, double a) {
     return {v.x * a, v.y * a, v.z * a};
 }
 
+boost::math::quaternion<double> axis2quat(double x, double y, double z, double theta)
+{
+	theta /= 2;
+    auto sint = sin(theta);
+	return boost::math::quaternion<double>{cos(theta), sint*x, sint*y, sint*z};
+}
+
+struct turtle2 {
+boost::math::quaternion<double> orientation {-1, 0, 0, 0};
+vector pos;
+
+vector forward = {1,0,0};
+vector up = {0,1,0};
+vector right = {0,0,1};
+
+void move(double dist) {
+    auto m = orientation * boost::math::quaternion<double>{0, dist,0,0};
+    pos += vector{m.R_component_2(), m.R_component_3(), m.R_component_4()};
+    std::cout << "G00";
+    std::cout << " X" << r6(pos.x);
+    std::cout << " Y" << r6(pos.y);
+    std::cout << " Z" << r6(pos.z);
+    std::cout << "\n";
+    std::cout << m << std::endl;
+}
+void yaw(double a) {
+    orientation *= axis2quat(0, 1, 0, a*(pi/180));
+}
+void pitch(double a) {
+    orientation *= axis2quat(0, 0, 1, a*(pi/180));
+}
+void roll(double a) {
+    orientation *= axis2quat(1, 0, 0, a*(pi/180));
+}
+
+};
+
+int main() {
+    turtle2 t;
+    t.yaw(90);
+    t.move(100);
+    t.yaw(-90);
+    std::cout << t.orientation << std::endl;
+    t.move(100);
+    return 0;
+}
+
+#if 0
 
 struct turtle {
     enum {
@@ -85,7 +139,6 @@ struct turtle {
     double f = 0.0;
 
     vector orientation() const {
-        static const double pi = 3.14159265359;
         auto theta = a * (pi/180);
         auto phi = b * (pi/180);
         return {std::cos(theta) * std::sin(phi), std::sin(theta) * std::sin(phi), std::cos(phi)};
@@ -386,3 +439,5 @@ int main(int argc, char* argv[]) {
     lua_close(L);
     L = NULL;
 }
+
+#endif

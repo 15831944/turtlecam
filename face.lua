@@ -1,6 +1,8 @@
-width = 100
-height = 100
-depth = 10
+width = tonumber(argv[2] or 100)
+height = tonumber(argv[3] or 100)
+depth = tonumber(argv[4] or 1)
+
+print("(" .. width .. " " .. height .. " " .. depth .. ")")
 
 tool_diameter = 10
 stepover = 1 -- .9 == 90%
@@ -26,13 +28,16 @@ for z = 0, depth_cuts - 1 do
 		else
 			dir = -1
 		end
+        if width_cuts % 2 ~= 0 and z % 2 ~= 0 then
+            dir = -dir
+        end
 		if h ~= width_cuts then
 			turn(90*dir)
 			cut(width / width_cuts, 50)
 			turn(90*dir)
 		end
 	end
-	turn(180)
+    turn(180)
 end
 
 turn(-180)

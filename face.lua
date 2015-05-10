@@ -6,7 +6,7 @@ print("(" .. width .. " " .. height .. " " .. depth .. ")")
 
 tool_diameter = 10
 stepover = 1 -- .9 == 90%
-stepdown = 1
+stepdown = .3
 
 effective_tool_width = tool_diameter * stepover
 
@@ -15,29 +15,39 @@ depth_cuts = math.ceil(depth / stepdown)
 
 move_to(0,0,0)
 
+-- @zag - long side step
+-- @zig - short side step
+-- @num - number of steps
+-- @turn_left - whether to turn left or right
+-- @f - feedrate
+function square_zag(zag, zig, num, turn_left, f)
+    local step, dir
+    for step = 0, num do
+        cut(zag, f)
+        if step % 2 == 0 then
+            dir = 1
+        else
+            dir = -1
+        end
+        if turn_left then
+            dir = -dir
+        end
+        if step < num then
+			turn(90*dir)
+			cut(zig, f)
+			turn(90*dir)
+		end
+    end
+end
+
 for z = 0, depth_cuts - 1 do
 	print("(layer " .. z+1 .. ")")
 	pitch(90)
 	cut(depth / depth_cuts, 20)
 	pitch(-90)
-
-	for h = 0, width_cuts do
-		cut(height, 50)
-		if h % 2 == 0 then
-			dir = 1
-		else
-			dir = -1
-		end
-        if width_cuts % 2 ~= 0 and z % 2 ~= 0 then
-            dir = -dir
-        end
-		if h ~= width_cuts then
-			turn(90*dir)
-			cut(width / width_cuts, 50)
-			turn(90*dir)
-		end
-	end
+    square_zag(height, width/width_cuts, width_cuts, width_cuts % 2 ~= 0 and z % 2 ~= 0, 50)
     turn(180)
 end
 
 turn(-180)
+

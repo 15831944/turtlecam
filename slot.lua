@@ -14,7 +14,7 @@ stepdown = 1
 
 local depth_passes = math.ceil(depth / stepdown)
 
-if tool_diameter < width then
+if tool_diameter > width then
     error "Tool too wide for slot"
 elseif tool_diameter == width then
     -- straight
@@ -25,4 +25,11 @@ elseif tool_diameter == width then
     end
 else
     -- cycloid
+    a = 1
+    r = tool_diameter/2
+    for t = 0, 10, 1 do
+        x = r * ((a*t) - math.sin(t))
+        y = r * (a - math.cos(t))
+        move_to(x, y, 0)
+    end
 end

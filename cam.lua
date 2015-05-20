@@ -1,5 +1,33 @@
 local cam = {}
 
+local function normalise_dir(dir)
+    if dir < 0 then
+        return -1
+    else
+        return 1
+    end
+end
+local function even(num)
+    return num % 2 == 0
+end
+local function odd(num)
+    return num % 2 ~= 0
+end
+local function right_if(cond)
+    if cond then
+        return 1
+    else
+        return -1
+    end
+end
+local function left_if(cond)
+    if cond then
+        return -1
+    else
+        return 1
+    end
+end
+
 function cam.plunge(dist, f)
     pitch(90)
     cut(dist, f)
@@ -9,68 +37,70 @@ end
 -- @zig - short side step
 -- @zag - long side step
 -- @num - number of steps
--- @turn_left - whether to turn left or right
+-- @dir - 1 = right, -1 = left
 -- @f - feedrate
-function cam.square_zag(zig, zag, num, turn_left, f)
-    local step, dir
+function cam.square_zag(zig, zag, num, dir, f)
+    dir = normalise_dir(dir)
     for step = 1, num do
         cut(zag, f)
-        if step % 2 ~= 0 then
-            dir = 1
-        else
-            dir = -1
-        end
-        if turn_left then
-            dir = -dir
+        local layer_dir = right_if(odd(step))
+        if dir < 0 then
+            layer_dir = -layer_dir
         end
         if step < num then
-			turn(90*dir)
+			turn(90*layer_dir)
 			cut(zig, f)
-			turn(90*dir)
+			turn(90*layer_dir)
 		end
     end
 end
 
-function cam.rectangle(a, b, turn_left, f)
-    if turn_left then
-        dir = -1
-    else
-        dir = 1
+-- @a - first side
+-- @b - second side
+-- @dir - 1 = right, -1 = left
+-- @f - feed rate
+function cam.rectangle(a, b, dir, f)
+    dir = normalise_dir(dir)
+    for _ = 1, 2 do
+        cut(a, f)
+        turn(90*dir)
+        cut(b, f)
+        turn(90*dir)
     end
-    cut(a, f)
-    turn(90*dir)
-    cut(b, f)
-    turn(90*dir)
-    cut(a, f)
-    turn(90*dir)
-    cut(b, f)
-    turn(90*dir)
 end
 
-function cam.square(size, f)
-    for i = 1, 4 do
+-- @size - side length
+-- @dir - 1 = right, -1 = left
+-- @f - feed rate
+function cam.square(size, dir, f)
+    dir = normalise_dir(dir)
+    for _ = 1, 4 do
         cut(size, f)
-        turn(90)
+        turn(90*dir)
     end
 end
 
-function cam.circle(r, f, sides)
+-- @r - radius
+-- @dir - 1 = right, -1 = left
+-- @f - feed rate
+-- @sides - number of line segments
+function cam.circle(r, dir, f, sides)
+    dir = normalise_dir(dir)
     sides = sides or 64
-    p = 2 * math.pi * r
-    for i = 1, sides do
+    local p = 2 * math.pi * r
+    for _ = 1, sides do
         cut(p/sides, f)
         turn(360/sides)
     end
 end
 
-function deg2rad(deg)
+local function deg2rad(deg)
     return (deg/1)*(math.pi/180)
 end
-
-function polygon_radius_to_edge(r, n)
+local function polygon_radius_to_edge(r, n)
     return 2 * r * math.sin(deg2rad(180/n))
 end
-function polygon_apothem(r, n)
+local function polygon_apothem(r, n)
     return r * math.cos(deg2rad(180/n))
 end
 
@@ -94,6 +124,22 @@ function cam.polygon(r, n, draw_n, center, f)
     for i = 1, draw_n do
         cut(edge, f)
         turn(theta)
+    end
+end
+
+function cam.face(width, height, num, depth, stepdown, f, plunge_f)
+    local zig = width / num
+    local zag = height
+    local depth_passes = math.ceil(depth / stepdown)
+    local even_width = num % 2 == 0
+
+    for z = 1, depth_passes do
+        local even_layer = even(z)
+        print("( layer " .. z .. " )")
+        cam.plunge(depth / depth_passes, plunge_f)
+        cam.square_zag(zig, zag, num+1, left_if(not even_width and even_layer), f)
+        turn(180)
+        cam.rectangle(height, width, left_if(not even_width and not even_layer), f)
     end
 end
 

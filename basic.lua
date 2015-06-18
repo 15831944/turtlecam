@@ -1,4 +1,5 @@
 -- print(argv[1]);
+print("M06 T03")
 move(100)
 pitch(90)
 cut(10,10)

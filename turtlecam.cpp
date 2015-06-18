@@ -19,11 +19,30 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <boost/program_options.hpp>
 
 extern "C" {
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+}
+
+namespace po = boost::program_options;
+
+void print_exception(const std::exception& e, int level = 0)
+{
+    std::cerr << std::string(level, ' ') << "error: " << e.what() << '\n';
+    try
+    {
+        std::rethrow_if_nested(e);
+    }
+    catch(const std::exception& e)
+    {
+        print_exception(e, level+1);
+    }
+    catch(...)
+    {
+    }
 }
 
 auto r6(double n) -> std::string {
@@ -362,27 +381,55 @@ void turtle_open(lua_State* L) {
 
 
 int main(int argc, char* argv[]) {
-    if(argc < 2) {
-        std::cerr << argv[0] << " command\n";
+    po::positional_options_description positional;
+    po::options_description options("turtlecam");
+    std::vector<std::string> args(argv, argv + argc);
+    args.erase(begin(args));
+
+    options.add_options()
+        ("help,h", "display this help and exit")
+        ("command", po::value<std::vector<std::string>>()->value_name("name")->required(), "Command to execute")
+    ;
+    positional.add("command", -1);
+
+    try {
+        po::variables_map vm;
+        store(po::command_line_parser(args).options(options).positional(positional).run(), vm);
+
+        if(vm.count("help")) {
+            std::cout << options << "\n";
+            return 0;
+        }
+        notify(vm);
+
+        auto command = vm["command"].as<std::vector<std::string>>();
+
+        lua_State* L = luaL_newstate();
+        luaL_openlibs(L);
+        turtle_open(L);
+
+        lua_newtable(L);
+        for (size_t i = 0; i < command.size(); ++i) {
+            lua_pushstring(L, command[i].c_str());
+            lua_rawseti(L, -2, i+1);
+        }
+        lua_setglobal(L, "argv");
+
+        if(luaL_dofile(L, command[0].c_str())) {
+            std::cerr << lua_tostring(L, -1) << "\n";
+            lua_pop(L, 1);
+        }
+
+        lua_close(L);
+        L = NULL;
+    } catch(const po::error& e) {
+        print_exception(e);
+        std::cout << options << "\n";
+        return 1;
+    } catch(const std::exception& e) {
+        print_exception(e);
         return 1;
     }
 
-    lua_State* L = luaL_newstate();
-    luaL_openlibs(L);
-    turtle_open(L);
-
-    lua_newtable(L);
-    for (int i = 1; i < argc; ++i) {
-        lua_pushstring(L, argv[i]);
-        lua_rawseti(L, -2, i);
-    }
-    lua_setglobal(L, "argv");
-
-    if(luaL_dofile(L, argv[1])) {
-        std::cerr << lua_tostring(L, -1) << "\n";
-        lua_pop(L, 1);
-    }
-
-    lua_close(L);
-    L = NULL;
+    return 0;
 }

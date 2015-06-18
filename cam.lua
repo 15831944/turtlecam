@@ -115,15 +115,20 @@ function cam.polygon(r, n, draw_n, center, f)
     theta = 360/n
 
     if center then
-        x = center.x - r * math.cos(2 * math.pi / n)
-        y = center.y - r * math.sin(2 * math.pi / n)
-        move_to(x, y, 0)
-        turn_to(0)
+        move(r)
+        turn(90 + (theta/2));
     end
 
     for i = 1, draw_n do
         cut(edge, f)
         turn(theta)
+    end
+
+    if center then
+        turn(-(90 + (theta/2)));
+        turn(180)
+        move(r)
+        turn(180)
     end
 end
 
@@ -141,6 +146,10 @@ function cam.face(width, height, num, depth, stepdown, f, plunge_f)
         turn(180)
         cam.rectangle(height, width, left_if(not even_width and not even_layer), f)
     end
+end
+
+function cam.tool(slot)
+    print("M06 T" .. slot)
 end
 
 return cam

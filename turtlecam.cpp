@@ -245,15 +245,15 @@ int lua_mode(lua_State *L) {
 int lua_move_to(lua_State *L) {
     int n = lua_gettop(L);
     if(t.mode == turtle::mill) {
-        if(n != 3 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
+        if(n != 3 || ( !lua_isnumber(L, 1) && !lua_isnumber(L, 2) && !lua_isnumber(L, 3) ) ) {
             lua_pushstring(L, "move_to(x, y, z)");
             lua_error(L);
             return 0;
         }
 
-        auto x = lua_tonumber(L, 1);
-        auto y = lua_tonumber(L, 2);
-        auto z = lua_tonumber(L, 3);
+        auto x = lua_isnil(L, 1) ? t.pos.x : lua_tonumber(L, 1);
+        auto y = lua_isnil(L, 2) ? t.pos.y : lua_tonumber(L, 2);
+        auto z = lua_isnil(L, 3) ? t.pos.z : lua_tonumber(L, 3);
         move_to(t, x, y, z);
     } else {
         if(n != 2 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2)) {
@@ -286,15 +286,15 @@ int lua_move(lua_State *L) {
 int lua_cut_to(lua_State *L) {
     int n = lua_gettop(L);
     if(t.mode == turtle::mill) {
-        if(n != 4 || !lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4)) {
+        if(n != 4 || ( !lua_isnumber(L, 1) && !lua_isnumber(L, 2) && !lua_isnumber(L, 3) ) || !lua_isnumber(L, 4)) {
             lua_pushstring(L, "cut_to(x, y, z, f)");
             lua_error(L);
             return 0;
         }
 
-        auto x = lua_tonumber(L, 1);
-        auto y = lua_tonumber(L, 2);
-        auto z = lua_tonumber(L, 3);
+        auto x = lua_isnil(L, 1) ? t.pos.x : lua_tonumber(L, 1);
+        auto y = lua_isnil(L, 2) ? t.pos.y : lua_tonumber(L, 2);
+        auto z = lua_isnil(L, 3) ? t.pos.z : lua_tonumber(L, 3);
         auto f = lua_tonumber(L, 4);
         cut_to(t, x, y, z, f);
     } else {

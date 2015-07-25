@@ -149,7 +149,7 @@ function cam.face(width, height, num, depth, stepdown, f, plunge_f)
 end
 
 function cam.polygon_helix(center, r, sides, turns, depth, f)
-    move_to(center.x + r * math.cos(2 * math.pi * 0 / sides), center.y + r * math.sin(2*math.pi * 0 / sides), nil);
+    move_to(center.x + r * math.cos(2 * math.pi * 0 / sides), center.y + r * math.sin(2*math.pi * 0 / sides), center.z);
 
     z = center.z;
     for _ = 1, turns do

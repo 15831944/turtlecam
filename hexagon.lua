@@ -21,15 +21,24 @@ local function polygon_apothem(r, n)
 end
 
 
+radius = 16/2;
 offset = 2;
-for y = 1, 80, 2*(polygon_apothem(8,6)+offset) do
-    for x = 0, 10 do
-        hex_x = x * (4+ polygon_radius_to_edge(8, 6) + offset);
+hexagons_x = 10;
+hexagons_y = 10;
+depth = 1;
+f = 50;
+turns = 10;
+
+sides = 6;
+apothem = polygon_apothem(radius, sides);
+for y = 1, hexagons_y*(2*(apothem+offset)), 2*(apothem+offset) do
+    for x = 1, hexagons_x do
+        hex_x = x * ((radius/2) + polygon_radius_to_edge(radius, sides) + offset);
         hex_y = y;
         if x % 2 == 0 then
-            hex_y = hex_y + (polygon_apothem(8,6) + offset);
+            hex_y = hex_y + (apothem + offset);
         end
-        cam.polygon_helix({x=hex_x,y=hex_y,z=0}, 16/2, 6, 10, 1, 50);
+        cam.polygon_helix({x=hex_x,y=hex_y,z=0}, radius, sides, turns, depth, f);
         move_to(nil,nil,1);
     end
 end

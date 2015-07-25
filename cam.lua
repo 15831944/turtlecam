@@ -148,6 +148,22 @@ function cam.face(width, height, num, depth, stepdown, f, plunge_f)
     end
 end
 
+function cam.polygon_helix(center, r, sides, turns, depth, f)
+    move_to(center.x + r * math.cos(2 * math.pi * 0 / sides), center.y + r * math.sin(2*math.pi * 0 / sides), nil);
+
+    z = center.z;
+    for _ = 1, turns do
+        for side = 1, sides do
+            x = center.x + r * math.cos(2 * math.pi * side / sides);
+            y = center.y + r * math.sin(2 * math.pi * side / sides);
+            if z then
+                z = z - (depth / turns / sides);
+            end
+            cut_to(x, y, z, f);
+        end
+    end
+end
+
 function cam.tool(slot)
     print("M06 T" .. slot)
 end

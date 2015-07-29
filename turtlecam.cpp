@@ -98,7 +98,9 @@ struct turtle {
     enum {
         unknown,
         move,
-        cut
+        cut,
+        arc_cw,
+        arc_ccw
     } motion = unknown;
     vector last_pos;
     double f = 0.0;
@@ -210,6 +212,34 @@ void cut(turtle& t, double dist, double f) {
     t.last_pos = t.pos;
     t.f = f;
 }
+void arc_to(turtle& t, double x, double y, double z, double dir, double i, double j, double turns, double f) {
+    if(is_equal(x, t.last_pos.x) && is_equal(y, t.last_pos.y) && is_equal(z, t.last_pos.z))
+        return;
+    t.pos = {x, y, z};
+    if (dir >= 0)
+        std::cout << (t.motion == turtle::arc_cw ? "   " : "G02");
+    else
+        std::cout << (t.motion == turtle::arc_ccw ? "   " : "G03");
+
+    // XY non-optional for G17 arc.
+    std::cout << " X" << r6(t.pos.x);
+    std::cout << " Y" << r6(t.pos.y);
+    if(!is_equal(t.pos.z, t.last_pos.z))
+        std::cout << " Z" << r6(t.pos.z);
+
+    std::cout << " I" << r6(i);
+    std::cout << " J" << r6(j);
+    if(!is_equal(turns, 1.0f))
+        std::cout << " P" << r6(turns);
+
+    if(!is_equal(f, t.f))
+        std::cout << " F" << f;
+    std::cout << "\n";
+
+    t.motion = dir >= 0 ? turtle::arc_cw : turtle::arc_ccw;
+    t.last_pos = t.pos;
+    t.f = f;
+}
 void turn_to(turtle& t, double degrees) {
     t.a = degrees;
 }
@@ -264,7 +294,7 @@ int lua_move_to(lua_State *L) {
 
         auto x = lua_tonumber(L, 1);
         auto y = lua_tonumber(L, 2);
-        auto z = 0;
+        auto z = 0.0f;
         move_to(t, x, y, z);
     }
 
@@ -306,7 +336,7 @@ int lua_cut_to(lua_State *L) {
 
         auto x = lua_tonumber(L, 1);
         auto y = lua_tonumber(L, 2);
-        auto z = 0;
+        auto z = 0.0f;
         auto f = lua_tonumber(L, 3);
         cut_to(t, x, y, z, f);
     }
@@ -324,6 +354,26 @@ int lua_cut(lua_State *L) {
     auto dist = lua_tonumber(L, 1);
     auto f = lua_tonumber(L, 2);
     cut(t, dist, f);
+
+    return 0;
+}
+int lua_arc_to(lua_State *L) {
+    int n = lua_gettop(L);
+    if(n != 8 || ( !lua_isnumber(L, 1) && !lua_isnumber(L, 2) && !lua_isnumber(L, 3) ) || ( !lua_isnumber(L, 5) && !lua_isnumber(L, 6) ) || !lua_isnumber(L, 8)) {
+        lua_pushstring(L, "arc_to(x, y, z, dir, i, j, turns, f)");
+        lua_error(L);
+        return 0;
+    }
+
+    auto x = lua_isnil(L, 1) ? t.pos.x : lua_tonumber(L, 1);
+    auto y = lua_isnil(L, 2) ? t.pos.y : lua_tonumber(L, 2);
+    auto z = lua_isnil(L, 3) ? t.pos.z : lua_tonumber(L, 3);
+    auto dir = lua_isnil(L, 4) ? 1.0f : lua_tonumber(L, 4);
+    auto i = lua_isnil(L, 5) ? 0.0f : lua_tonumber(L, 5);
+    auto j = lua_isnil(L, 6) ? 0.0f : lua_tonumber(L, 6);
+    auto turns = lua_isnil(L, 7) ? 1.0f : lua_tonumber(L, 7);
+    auto f = lua_tonumber(L, 8);
+    arc_to(t, x, y, z, dir, i, j, turns, f);
 
     return 0;
 }
@@ -372,8 +422,9 @@ void turtle_open(lua_State* L) {
     lua_register(L, "mode", lua_mode);
     lua_register(L, "move_to", lua_move_to);
     lua_register(L, "move", lua_move);
-    lua_register(L, "cut", lua_cut);
     lua_register(L, "cut_to", lua_cut_to);
+    lua_register(L, "cut", lua_cut);
+    lua_register(L, "arc_to", lua_arc_to);
     lua_register(L, "turn_to", lua_turn_to);
     lua_register(L, "turn", lua_turn);
     lua_register(L, "pitch", lua_pitch);

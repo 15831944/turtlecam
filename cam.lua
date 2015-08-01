@@ -169,12 +169,12 @@ function cam.tool(slot)
 end
 
 function cam.raw_spiral(center, steps, loops, a, b, start_theta, f)
-	step = 2 * math.pi / steps;
-	max = 2 * math.pi * loops;
+	local step = 2 * math.pi / steps;
+	local max = 2 * math.pi * loops;
 
-    pos = (a + b * (0 + start_theta));
-    x = center.x + pos * math.cos(0);
-    y = center.y + pos * math.sin(0);
+    local pos = (a + b * (0 + start_theta));
+    local x = center.x + pos * math.cos(0);
+    local y = center.y + pos * math.sin(0);
     move_to(x, y, nil)
     turn_to(0)
 	

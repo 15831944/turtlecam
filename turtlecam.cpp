@@ -213,6 +213,38 @@ void cut(turtle& t, double dist, double f) {
     t.f = f;
 }
 void arc_to(turtle& t, double x, double y, double z, double dir, double i, double j, double turns, double f) {
+    t.pos = {x, y, z};
+    if (dir >= 0)
+        std::cout << (t.motion == turtle::arc_cw ? "   " : "G02");
+    else
+        std::cout << (t.motion == turtle::arc_ccw ? "   " : "G03");
+
+    // XY non-optional for G17 arc.
+    std::cout << " X" << r6(t.pos.x);
+    std::cout << " Y" << r6(t.pos.y);
+    if(!is_equal(t.pos.z, t.last_pos.z))
+        std::cout << " Z" << r6(t.pos.z);
+
+    std::cout << " I" << r6(i);
+    std::cout << " J" << r6(j);
+    if(!is_equal(turns, 1.0f))
+        std::cout << " P" << r6(turns);
+
+    if(!is_equal(f, t.f))
+        std::cout << " F" << f;
+    std::cout << "\n";
+
+    t.motion = dir >= 0 ? turtle::arc_cw : turtle::arc_ccw;
+    t.last_pos = t.pos;
+    t.f = f;
+}
+/*void arc(turtle& t, double radius, double dir, double degrees, double z, double f) {
+    // TODO
+    double x = 0;
+    double y = 0;
+    double i;
+    double j;
+
     if(is_equal(x, t.last_pos.x) && is_equal(y, t.last_pos.y) && is_equal(z, t.last_pos.z))
         return;
     t.pos = {x, y, z};
@@ -239,7 +271,7 @@ void arc_to(turtle& t, double x, double y, double z, double dir, double i, doubl
     t.motion = dir >= 0 ? turtle::arc_cw : turtle::arc_ccw;
     t.last_pos = t.pos;
     t.f = f;
-}
+}*/
 void turn_to(turtle& t, double degrees) {
     t.a = degrees;
 }
@@ -418,6 +450,16 @@ int lua_pitch(lua_State *L) {
 
     return 0;
 }
+int lua_pos(lua_State *L) {
+    lua_newtable(L);
+    lua_pushnumber(L, t.pos.x);
+    lua_setfield(L, -2, "x");
+    lua_pushnumber(L, t.pos.y);
+    lua_setfield(L, -2, "y");
+    lua_pushnumber(L, t.pos.z);
+    lua_setfield(L, -2, "z");
+    return 1;
+}
 void turtle_open(lua_State* L) {
     lua_register(L, "mode", lua_mode);
     lua_register(L, "move_to", lua_move_to);
@@ -428,6 +470,7 @@ void turtle_open(lua_State* L) {
     lua_register(L, "turn_to", lua_turn_to);
     lua_register(L, "turn", lua_turn);
     lua_register(L, "pitch", lua_pitch);
+    lua_register(L, "pos", lua_pos);
 }
 
 

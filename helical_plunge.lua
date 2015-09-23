@@ -1,16 +1,6 @@
 local cam = require("cam")
 
 --print("G02 X0 Y0 I1 J1 Z-10 P10 F10")
--- Note! if r >= tool_r there will be a post left in the middle
-function helical_plunge(r, depth, stepdown, f)
-    turns = depth / stepdown
-    p = pos();
-    -- TODO accurate arc center
-    -- offset to center is vector based on current theta
-    move(-r)
-    arc_to(nil, nil, pos().z-depth, 1, r, 0, turns, f);
-    move(r)
-end
 
 function involute_spiral(center, dir, r, steps, loops, f)
 	local step = 2 * math.pi / steps;
@@ -45,12 +35,14 @@ f = 200
 r = 20 - tool_r
 z = 7
 
+
 for i = 1, 4 do
     move(20)
     p = pos()
-    helical_plunge(1, 5, 0.5, f)
+    cam.helical_plunge(1, 5, 0.5, f)
     turn(90)
     move_to(nil, nil, p.z)
 end
+
 --cam.spiral(pos(), r, 0.5, f)
 --arc_to(pos().x, pos().y, nil, 1, -r, 0, 1, f)

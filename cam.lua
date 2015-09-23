@@ -34,6 +34,21 @@ function cam.plunge(dist, f)
     pitch(-90)
 end
 
+-- @r - helix radius
+-- @depth - plunge depth
+-- @stepdown - depth per full circle
+-- @f - feedrate
+-- Note! if r >= tool_r there will be a post left in the middle
+function cam.helical_plunge(r, depth, stepdown, f)
+    turns = depth / stepdown
+    p = pos();
+    x = p.x+(r*math.cos(0))
+    y = p.y+(r*math.sin(0))
+    move_to(x, y, nil)
+    arc_to(x, y, p.z-depth, 1, p.x-x, p.y-y, turns, f);
+    move_to(p.x, p.y, nil)
+end
+
 -- @zig - short side step
 -- @zag - long side step
 -- @num - number of steps

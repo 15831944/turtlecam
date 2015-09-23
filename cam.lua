@@ -28,12 +28,17 @@ local function left_if(cond)
     end
 end
 
-function cam.plunge(dist, f)
+
+-- Simple vertical plunge
+-- @depth - plunge depth
+-- @f - feedrate
+function cam.plunge(depth, f)
     pitch(90)
-    cut(dist, f)
+    cut(depth, f)
     pitch(-90)
 end
 
+-- Helical vertical plunge
 -- @r - helix radius
 -- @depth - plunge depth
 -- @stepdown - depth per full circle
@@ -49,6 +54,7 @@ function cam.helical_plunge(r, depth, stepdown, f)
     move_to(p.x, p.y, nil)
 end
 
+-- Square zig-zag pattern
 -- @zig - short side step
 -- @zag - long side step
 -- @num - number of steps

@@ -28,6 +28,10 @@ local function left_if(cond)
     end
 end
 
+local function r6(val)
+    return math.floor( (val * 10^6) + 0.5) / (10^6)
+end
+
 
 -- Simple vertical plunge
 -- @depth - plunge depth
@@ -44,7 +48,7 @@ end
 -- @f - feedrate
 function cam.peck_drill(depth, stepdown, f)
     p = pos();
-    print("G83 X" .. string.format("%.6f", p.x) .. " Y" .. string.format("%.6f", p.y) .. " Z" .. string.format("%.6f", p.z-depth) .. " R" .. string.format("%.6f", p.z) .. " Q" .. stepdown .. " F" .. f)
+    print("G83 X" .. r6(p.x) .. " Y" .. r6(p.y) .. " Z" .. r6(p.z-depth) .. " R" .. r6(p.z) .. " Q" .. stepdown .. " F" .. f)
 end
 
 -- Helical vertical plunge

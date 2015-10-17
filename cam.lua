@@ -38,6 +38,15 @@ function cam.plunge(depth, f)
     pitch(-90)
 end
 
+-- Drill cycle
+-- @depth - drill depth
+-- @stepdown - peck stepdown
+-- @f - feedrate
+function cam.peck_drill(depth, stepdown, f)
+    p = pos();
+    print("G83 X" .. p.x .. " Y" .. p.y .. " Z" .. p.z-depth .. " R" .. p.z .. " Q" .. stepdown .. " F" .. f)
+end
+
 -- Helical vertical plunge
 -- @r - helix radius
 -- @depth - plunge depth

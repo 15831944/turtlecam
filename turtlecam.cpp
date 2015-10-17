@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <string>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 extern "C" {
 #include "lua.h"
@@ -28,6 +29,7 @@ extern "C" {
 }
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 void print_exception(const std::exception& e, int level = 0)
 {
@@ -501,6 +503,19 @@ int main(int argc, char* argv[]) {
         lua_State* L = luaL_newstate();
         luaL_openlibs(L);
         turtle_open(L);
+
+        {   // fragile and ulgy
+            lua_getglobal(L, "package");
+            lua_getfield(L, -1, "path");
+            std::string path = lua_tostring(L, -1);
+            lua_pop(L, 1);
+            path += ";";
+            path += getenv("HOME");
+            path += "/.turtle/?.lua";
+            lua_pushstring(L, path.c_str());
+            lua_setfield(L, -2, "path");
+            lua_pop(L, 1);
+        }
 
         lua_newtable(L);
         for (size_t i = 0; i < command.size(); ++i) {

@@ -117,25 +117,41 @@ end
 -- @r - radius
 -- @dir - 1 = right, -1 = left
 -- @f - feed rate
--- @sides - number of line segments
-function cam.circle(r, dir, f, sides)
-    dir = normalise_dir(dir)
+-- @theta - arc radians (default = whole circle)
+-- @sides - number of line segments (default = 64)
+function cam.circle(r, dir, f, theta, sides)
+    -- TODO determine if the negation necessary here is specific
+    -- to this function or a symptom of a greater issue.
+    dir = -normalise_dir(dir)
     sides = sides or 64
-    local p = 2 * math.pi * r
+    theta = theta or 2 * math.pi
+    local p = (theta * r) / sides
+    local alpha = math.deg(theta * dir) / sides
     for _ = 1, sides do
-        cut(p/sides, f)
-        turn(360/sides)
+        cut(p, f)
+        turn(alpha)
     end
 end
 
-local function deg2rad(deg)
-    return (deg/1)*(math.pi/180)
+-- @dist - cut length
+-- @step - step size
+-- @r - radius of troichoid
+-- @f - feed rate
+function cam.trochoidal_slot(dist, step, r, f)
+    steps = dist / step
+    for _ = 1, steps do
+        cam.circle(r, 1, f, 1*math.pi)
+        cut(step, f)
+        cam.circle(r, 1, f, 1*math.pi)
+        cut(step*2, f)
+    end
 end
+
 local function polygon_radius_to_edge(r, n)
-    return 2 * r * math.sin(deg2rad(180/n))
+    return 2 * r * math.sin(math.rad(180/n))
 end
 local function polygon_apothem(r, n)
-    return r * math.cos(deg2rad(180/n))
+    return r * math.cos(math.rad(180/n))
 end
 
 -- @r - radius

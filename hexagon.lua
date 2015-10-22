@@ -10,14 +10,11 @@ local cam = require("cam")
 --    cut(100, 50)
 --end
 
-local function deg2rad(deg)
-    return (deg/1)*(math.pi/180)
-end
 local function polygon_radius_to_edge(r, n)
-    return 2 * r * math.sin(deg2rad(180/n))
+    return 2 * r * math.sin(math.rad(180/n))
 end
 local function polygon_apothem(r, n)
-    return r * math.cos(deg2rad(180/n))
+    return r * math.cos(math.rad(180/n))
 end
 
 

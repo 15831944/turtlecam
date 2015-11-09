@@ -48,7 +48,7 @@ end
 -- @f - feedrate
 function cam.peck_drill(depth, stepdown, f)
     p = pos();
-    print("G83 X" .. r6(p.x) .. " Y" .. r6(p.y) .. " Z" .. r6(p.z-depth) .. " R" .. r6(p.z) .. " Q" .. stepdown .. " F" .. f)
+    print("G83 X" .. r6(p.x) .. " Y" .. r6(p.y) .. " Z" .. r6(p.z-depth) .. " R" .. r6(p.z + 1) .. " Q" .. stepdown .. " F" .. f)
 end
 
 -- Helical vertical plunge
